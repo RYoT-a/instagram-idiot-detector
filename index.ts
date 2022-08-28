@@ -6,7 +6,7 @@ const friendListHistory = JSON.parse(
 );
 
 const follower: string[] = friendList.follower;
-// const following: string[] = friendList.following;
+const following: string[] = friendList.following;
 const previousFollower: string[] =
   friendListHistory[friendListHistory.length - 1].follower;
 
@@ -25,7 +25,7 @@ function FollowerDiffChecker() {
   if (Array.isArray(previousFollower)) {
     const followerDiff = diff(follower, previousFollower);
 
-    console.log("Change in followers compared to last time");
+    console.log("---------- Change in followers compared to last time ----------");
 
     followerDiff.addedData.forEach((user) => {
       console.log("\u001b[32m" + "+ " + user);
@@ -39,4 +39,20 @@ function FollowerDiffChecker() {
   }
 }
 
+// Check for users who are not mutual followers
+function MutualFollowerDiffChecker() {
+  const mutualFollowerDiff = diff(follower, following);
+
+  console.log("\u001b[37m" + "---------- Users I do not follow ----------");
+  mutualFollowerDiff.addedData.forEach((user) => {
+    console.log("\u001b[32m" + "+ " + user);
+  });
+
+  console.log("\u001b[37m" + "---------- Fucking idiot ----------");
+  mutualFollowerDiff.deletedData.forEach((user) => {
+    console.log("\u001b[31m" + "- " + user);
+  });
+}
+
 FollowerDiffChecker();
+MutualFollowerDiffChecker();
