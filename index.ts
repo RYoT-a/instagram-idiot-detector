@@ -1,9 +1,40 @@
-const friendList = JSON.parse(
-  await Deno.readTextFile("./friend_list.json"),
-);
-const friendListHistory = JSON.parse(
-  await Deno.readTextFile("./friend_list_history.json"),
-);
+type FriendList = {
+  follower: string[];
+  following: string[];
+};
+
+type friendListHistoryItem = {
+  date: string;
+  follower: string[];
+};
+
+const friendList: FriendList = await (async () => {
+  try {
+    return JSON.parse(
+      await Deno.readTextFile("./friend_list.json"),
+    );
+  } catch (_error) {
+    console.log(
+      "Could not successfully retrieve friend list.\nThe process is terminated.",
+    );
+    console.error(_error);
+    Deno.exit();
+  }
+})();
+
+const friendListHistory: friendListHistoryItem[] = await (async () => {
+  try {
+    return JSON.parse(
+      await Deno.readTextFile("./friend_list_history.json"),
+    );
+  } catch (_error) {
+    console.log(
+      "Could not successfully retrieve friend list history.\nThe process is terminated.",
+    );
+    console.error(_error);
+    Deno.exit();
+  }
+})();
 
 const follower: string[] = friendList.follower;
 const following: string[] = friendList.following;
@@ -21,12 +52,26 @@ function diff(baseData: string[], compareData: string[]) {
 }
 
 // Change in followers compared to last time
-function FollowerDiffChecker() {
-  if (Array.isArray(previousFollower)) {
-    const followerDiff = diff(follower, previousFollower);
+async function FollowerDiffChecker() {
+  const friendListHistoryItem: friendListHistoryItem = {
+    date: new Date().toISOString(),
+    follower: follower,
+  };
+  let newFriendListHistory: friendListHistoryItem[] = friendListHistory;
 
-    console.log("---------- Change in followers compared to last time ----------");
+  if (friendListHistory[0].follower[0] === "initial data") {
+    console.log(
+      "Since this is the first run, comparisons with the previous run will not be displayed.",
+    );
 
+    newFriendListHistory = [friendListHistoryItem];
+
+  } else {
+    const followerDiff = diff(previousFollower, follower);
+
+    console.log(
+      "---------- Change in followers compared to last time ----------",
+    );
     followerDiff.addedData.forEach((user) => {
       console.log("\u001b[32m" + "+ " + user);
     });
@@ -34,9 +79,14 @@ function FollowerDiffChecker() {
     followerDiff.deletedData.forEach((user) => {
       console.log("\u001b[31m" + "- " + user);
     });
-  } else {
-    console.log("Error: Previous data does not exist.");
+
+    newFriendListHistory.push(friendListHistoryItem);
   }
+
+  await Deno.writeTextFile(
+    "./friend_list_history.json",
+    newFriendListHistory.toString(),
+  );
 }
 
 // Check for users who are not mutual followers

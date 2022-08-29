@@ -1,9 +1,8 @@
 [
   {
-    "date": "2022-08-28T10:14:47.502Z",
+    "date": "2000-01-01T01:01:01.000Z",
     "follower": [
-      "test",
-      "genius"
+      "initial data"
     ]
   }
 ]
