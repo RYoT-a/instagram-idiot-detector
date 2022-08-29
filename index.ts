@@ -44,7 +44,7 @@ const previousFollower: string[] =
 // Returns added and deleted data based on the initial data
 function diff(baseData: string[], compareData: string[]) {
   const addedData = baseData.filter((item) =>
-  compareData.indexOf(item) == -1
+    compareData.indexOf(item) == -1
   );
   const deletedData = compareData.filter((item) =>
     baseData.indexOf(item) == -1
