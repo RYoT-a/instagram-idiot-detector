@@ -43,9 +43,11 @@ const previousFollower: string[] =
 
 // Returns added and deleted data based on the initial data
 function diff(baseData: string[], compareData: string[]) {
-  const addedData = compareData.filter((item) => baseData.indexOf(item) == -1);
-  const deletedData = baseData.filter((item) =>
-    compareData.indexOf(item) == -1
+  const addedData = baseData.filter((item) =>
+  compareData.indexOf(item) == -1
+  );
+  const deletedData = compareData.filter((item) =>
+    baseData.indexOf(item) == -1
   );
 
   return ({ addedData: addedData, deletedData: deletedData });
@@ -67,11 +69,12 @@ async function FollowerDiffChecker() {
     newFriendListHistory = [friendListHistoryItem];
 
   } else {
-    const followerDiff = diff(previousFollower, follower);
+    const followerDiff = diff(follower, previousFollower);
 
     console.log(
       "---------- Change in followers compared to last time ----------",
     );
+
     followerDiff.addedData.forEach((user) => {
       console.log("\u001b[32m" + "+ " + user);
     });
@@ -85,7 +88,7 @@ async function FollowerDiffChecker() {
 
   await Deno.writeTextFile(
     "./friend_list_history.json",
-    newFriendListHistory.toString(),
+    JSON.stringify(newFriendListHistory, null, "\t"),
   );
 }
 
@@ -95,12 +98,12 @@ function MutualFollowerDiffChecker() {
 
   console.log("\u001b[37m" + "---------- Users I do not follow ----------");
   mutualFollowerDiff.addedData.forEach((user) => {
-    console.log("\u001b[32m" + "+ " + user);
+    console.log("\u001b[32m" + user);
   });
 
   console.log("\u001b[37m" + "---------- Fucking idiot ----------");
   mutualFollowerDiff.deletedData.forEach((user) => {
-    console.log("\u001b[31m" + "- " + user);
+    console.log("\u001b[31m" + user);
   });
 }
 
