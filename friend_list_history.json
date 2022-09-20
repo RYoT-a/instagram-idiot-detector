@@ -1,8 +1,10 @@
-[
-  {
-    "date": "2000-01-01T01:01:01.000Z",
-    "follower": [
-      "initial data"
-    ]
-  }
-]
+{
+  "previousFollower": ["initial data"],
+  "history": [
+    {
+      "date": "2000-01-01T01:01:01.000Z",
+      "addedFollower": [],
+      "deletedFollower": []
+    }
+  ]
+}

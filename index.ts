@@ -3,33 +3,35 @@ type FriendList = {
   following: string[];
 };
 
-type friendListHistoryItem = {
-  date: string;
-  follower: string[];
+type FriendListHistory = {
+  previousFollower: string[];
+  history: friendListHistoryItem[];
 };
 
-const friendList: FriendList = await (async () => {
+type friendListHistoryItem = {
+  date: string;
+  addedFollower: string[];
+  deletedFollower: string[];
+};
+
+const friendList: FriendList = await(async () => {
   try {
-    return JSON.parse(
-      await Deno.readTextFile("./friend_list.json"),
-    );
+    return JSON.parse(await Deno.readTextFile("./friend_list.json"));
   } catch (_error) {
     console.log(
-      "Could not successfully retrieve friend list.\nThe process is terminated.",
+      "Could not successfully retrieve friend list.\nThe process is terminated."
     );
     console.error(_error);
     Deno.exit();
   }
 })();
 
-const friendListHistory: friendListHistoryItem[] = await (async () => {
+const friendListHistory: FriendListHistory = await(async () => {
   try {
-    return JSON.parse(
-      await Deno.readTextFile("./friend_list_history.json"),
-    );
+    return JSON.parse(await Deno.readTextFile("./friend_list_history.json"));
   } catch (_error) {
     console.log(
-      "Could not successfully retrieve friend list history.\nThe process is terminated.",
+      "Could not successfully retrieve friend list history.\nThe process is terminated."
     );
     console.error(_error);
     Deno.exit();
@@ -38,41 +40,39 @@ const friendListHistory: friendListHistoryItem[] = await (async () => {
 
 const follower: string[] = friendList.follower;
 const following: string[] = friendList.following;
-const previousFollower: string[] =
-  friendListHistory[friendListHistory.length - 1].follower;
+const previousFollower: string[] = friendListHistory.previousFollower;
 
 // Returns added and deleted data based on the initial data
 function diff(baseData: string[], compareData: string[]) {
-  const addedData = baseData.filter((item) =>
-    compareData.indexOf(item) == -1
-  );
-  const deletedData = compareData.filter((item) =>
-    baseData.indexOf(item) == -1
+  const addedData = baseData.filter((item) => compareData.indexOf(item) == -1);
+  const deletedData = compareData.filter(
+    (item) => baseData.indexOf(item) == -1
   );
 
-  return ({ addedData: addedData, deletedData: deletedData });
+  return { addedData: addedData, deletedData: deletedData };
 }
 
 // Change in followers compared to last time
 async function FollowerDiffChecker() {
-  const friendListHistoryItem: friendListHistoryItem = {
+  const newFriendListHistoryItem: friendListHistoryItem = {
     date: new Date().toISOString(),
-    follower: follower,
+    addedFollower: follower,
+    deletedFollower: [],
   };
-  let newFriendListHistory: friendListHistoryItem[] = friendListHistory;
 
-  if (friendListHistory[0].follower[0] === "initial data") {
+  friendListHistory.previousFollower = follower;
+
+  if (previousFollower[0] === "initial data") {
     console.log(
-      "Since this is the first run, comparisons with the previous run will not be displayed.",
+      "Since this is the first run, comparisons with the previous run will not be displayed."
     );
 
-    newFriendListHistory = [friendListHistoryItem];
-
+    friendListHistory.history = [newFriendListHistoryItem];
   } else {
     const followerDiff = diff(follower, previousFollower);
 
     console.log(
-      "---------- Change in followers compared to last time ----------",
+      "---------- Change in followers compared to last time ----------"
     );
 
     followerDiff.addedData.forEach((user) => {
@@ -83,12 +83,14 @@ async function FollowerDiffChecker() {
       console.log("\u001b[31m" + "- " + user);
     });
 
-    newFriendListHistory.push(friendListHistoryItem);
+    newFriendListHistoryItem.addedFollower = followerDiff.addedData;
+    newFriendListHistoryItem.deletedFollower = followerDiff.deletedData;
+    friendListHistory.history.push(newFriendListHistoryItem);
   }
 
   await Deno.writeTextFile(
     "./friend_list_history.json",
-    JSON.stringify(newFriendListHistory, null, "\t"),
+    JSON.stringify(friendListHistory, null, "\t")
   );
 }
 
