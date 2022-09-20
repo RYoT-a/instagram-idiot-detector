@@ -1,10 +1,4 @@
 {
-  "follower": [
-    "test",
-    "genius"
-  ],
-  "following": [
-    "test",
-    "idiot"
-  ]
+  "follower": ["test", "genius"],
+  "following": ["test", "idiot"]
 }
